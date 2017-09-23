@@ -26,12 +26,6 @@ func (addr *Address) read(reader io.Reader) error {
 	return nil
 }
 
-// write writes the address to the given io.Writer
-func (addr *Address) write(writer io.Writer) error {
-	_, err := writer.Write([]byte{addr.Unit, addr.Group})
-	return err
-}
-
 func (addr *Address) bytes() []byte {
 	return []byte{addr.Unit, addr.Group}
 }

@@ -13,7 +13,27 @@ type header struct {
 	DataLength  byte
 }
 
-func (header header) bytes() []byte {
+func (header *header) read(reader io.Reader) error {
+	// Read destination address
+	err := header.Destination.read(reader)
+	if err != nil {
+		return err
+	}
+
+	// Read source address
+	err = header.Source.read(reader)
+	if err != nil {
+		return err
+	}
+
+	// read Opcode and DataLength
+	remainingHeader := make([]byte, 2)
+	_, err = io.ReadFull(reader, remainingHeader)
+	header.Opcode, header.DataLength = remainingHeader[0], remainingHeader[1]
+	return err
+}
+
+func (header *header) bytes() []byte {
 	addresses := append(header.Destination.bytes(), header.Source.bytes()...)
 	return append(addresses, header.Opcode, header.DataLength)
 }
@@ -26,25 +46,10 @@ type Message struct {
 
 // read reads a message from the provided reader
 func (message *Message) read(reader io.Reader) error {
-	// Read destination address
-	err := message.Destination.read(reader)
+	err := message.header.read(reader)
 	if err != nil {
 		return err
 	}
-
-	// Read source address
-	err = message.Source.read(reader)
-	if err != nil {
-		return err
-	}
-
-	// read Opcode and DataLength
-	remainingHeader := make([]byte, 2)
-	_, err = io.ReadFull(reader, remainingHeader)
-	if err != nil {
-		return err
-	}
-	message.Opcode, message.DataLength = remainingHeader[0], remainingHeader[1]
 
 	// read data
 	message.Data = make([]byte, int(message.DataLength))
@@ -60,14 +65,22 @@ func (message *Message) read(reader io.Reader) error {
 	return message.validate()
 }
 
+func (message *Message) bytes() []byte {
+	data := append(message.header.bytes(), message.Data...)
+	crcBytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(crcBytes, message.CRC)
+	return append(data, crcBytes...)
+}
+
 func (message *Message) validate() (err error) {
 	if len(message.Data) != int(message.DataLength) {
 		return errors.New("Data Length Mismatch")
 	}
-	data := []byte{message.Destination.Unit, message.Destination.Group, message.Source.Unit, message.Source.Group, message.Opcode, message.DataLength}
-	data = append(data, message.Data...)
 
-	crc := calculateCRC(data)
+	data := message.bytes()
+
+	// Calculate CRC for the entire message minus the crc
+	crc := calculateCRC(data[:len(data)-2])
 	if crc != message.CRC {
 		err = errors.New("CRC Mismatch")
 	}
