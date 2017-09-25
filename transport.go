@@ -33,7 +33,11 @@ func (client baseTransport) transceive(request Message, transport io.ReadWriter)
 		return
 	}
 	if response.Opcode == ErrorResponse {
-		err = ErrorResponseMessage(response)
+		var errM ErrorResponseMessage
+		errM, err = errorResponseMessage(response)
+		if err == nil {
+			err = errM
+		}
 	}
 	return
 }
