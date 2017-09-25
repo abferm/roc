@@ -68,6 +68,31 @@ func (client Client) SendContiguousParameters(start TLP, count uint8) (data []by
 	return
 }
 
+func (client Client) SendSpecifiedParameters(parameters []TLP) (data []byte, err error) {
+	request := Message{}
+	request.Source, request.Destination = client.Host, client.Controller
+	request.Opcode = SendSpecifiedParameters
+
+	if len(parameters) > 255 {
+		err = fmt.Errorf("Too many parameters requested.")
+		return
+	}
+
+	request.Data = []byte{byte(len(parameters))}
+
+	for _, tlp := range parameters {
+		request.Data = append(request.Data, tlp.PointType, tlp.LogicNumber, tlp.Parameter)
+	}
+
+	response, err := client.Transport.Transceive(request)
+	if err != nil {
+		return
+	}
+
+	data = response.Data
+	return
+}
+
 func (client Client) SetTimeAndDate(now time.Time) (err error) {
 	request := Message{}
 	request.Source, request.Destination = client.Host, client.Controller
