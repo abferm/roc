@@ -49,7 +49,7 @@ func (client Client) SendTimeAndDate() (now time.Time, err error) {
 	year := int(response.Data[5])
 	//leapYear := int(response.Data[6])
 	//weekDay := int(response.Data[7])
-	now = time.Date(year, month, day, hour, minute, second, 0, nil)
+	now = time.Date(year, month, day, hour, minute, second, 0, time.Local)
 	return
 }
 
@@ -64,7 +64,7 @@ func (client Client) SendContiguousParameters(start TLP, count uint8) (data []by
 		return
 	}
 
-	data = response.Data
+	data = response.Data[4:]
 	return
 }
 
