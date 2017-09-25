@@ -6,6 +6,8 @@ import (
 	"io"
 )
 
+const MaxPayloadSize = 0xffff
+
 type header struct {
 	Destination Address
 	Source      Address
@@ -85,4 +87,16 @@ func (message *Message) validate() (err error) {
 		err = errors.New("CRC Mismatch")
 	}
 	return err
+}
+
+func (message *Message) updateCalculatedFields() (err error) {
+	if len(message.Data) > MaxPayloadSize {
+		return errors.New("Message payload too long")
+	}
+	message.DataLength = byte(len(message.Data))
+	data := message.bytes()
+
+	// Calculate CRC for the entire message minus the crc
+	message.CRC = calculateCRC(data[:len(data)-2])
+	return
 }
