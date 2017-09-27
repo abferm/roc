@@ -16,6 +16,14 @@ var (
 	procSetCommState    = modkernel32.NewProc("SetCommState")
 	procGetCommTimeouts = modkernel32.NewProc("GetCommTimeouts")
 	procSetCommTimeouts = modkernel32.NewProc("SetCommTimeouts")
+	procPurgeComm       = modkernel32.NewProc("ProcComm")
+)
+
+const (
+	PURGE_TXABORT = 0x0001
+	PURGE_RXABORT = 0x0002
+	PURGE_TXCLEAR = 0x0004
+	PURGE_RXCLEAR = 0x0008
 )
 
 func GetCommState(handle syscall.Handle, dcb *c_DCB) (err error) {
@@ -64,4 +72,17 @@ func SetCommTimeouts(handle syscall.Handle, timeouts *c_COMMTIMEOUTS) (err error
 		}
 	}
 	return
+}
+
+func PurgeComm(h syscall.Handle) (err error) {
+	r1, _, e1 := syscall.Syscall(procPurgeComm.Addr(), 2, uintptr(h),
+		PURGE_TXABORT|PURGE_RXABORT|PURGE_TXCLEAR|PURGE_RXCLEAR, 0)
+	if r1 == 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return nil
 }

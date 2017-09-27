@@ -82,7 +82,9 @@ func (p *port) Write(b []byte) (n int, err error) {
 	return
 }
 
-// TODO: Broken interface... Needs flush
+func (p *port) Flush() error {
+	return PurgeComm(p.handle)
+}
 
 func (p *port) setTimeouts(c *Config) error {
 	var timeouts c_COMMTIMEOUTS
