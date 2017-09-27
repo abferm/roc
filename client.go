@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/abferm/roc/serial"
+	"github.com/abferm/serial"
 )
 
 type Client struct {
@@ -20,7 +20,7 @@ func NewClient(host, controller Address, transport Transport) *Client {
 	return client
 }
 
-func NewClientSerial(host, controller Address, port *LockingSerialPort, config serial.Config) *Client {
+func NewClientSerial(host, controller Address, port *serial.LockingSerialPort, config serial.Config) *Client {
 	return NewClient(host, controller, NewSerialTransport(port, config))
 }
 

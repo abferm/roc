@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/abferm/roc/serial"
+	"github.com/abferm/serial"
 )
 
 type Transport interface {
@@ -44,11 +44,11 @@ func (client baseTransport) transceive(request Message, transport io.ReadWriter)
 
 type SerialTransport struct {
 	baseTransport
-	Port   *LockingSerialPort
+	Port   *serial.LockingSerialPort
 	Config serial.Config
 }
 
-func NewSerialTransport(port *LockingSerialPort, config serial.Config) *SerialTransport {
+func NewSerialTransport(port *serial.LockingSerialPort, config serial.Config) *SerialTransport {
 	trans := new(SerialTransport)
 	trans.Port = port
 	trans.Config = config
