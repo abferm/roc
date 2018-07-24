@@ -1,6 +1,7 @@
 package roc
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -102,6 +103,7 @@ func (client Client) SetTimeAndDate(now time.Time) (err error) {
 	_, err = client.Transport.Transceive(request)
 	return
 }
+
 func (client Client) SetContiguousParameters(start TLP, count uint8, data []byte) (err error) {
 	request := Message{}
 	request.Source, request.Destination = client.Host, client.Controller
@@ -109,5 +111,18 @@ func (client Client) SetContiguousParameters(start TLP, count uint8, data []byte
 	request.Data = append([]byte{start.PointType, start.LogicNumber, count, start.Parameter}, data...)
 
 	_, err = client.Transport.Transceive(request)
+	return
+}
+
+func (client Client) SendMultipleHistoryPoints(segment uint8, index uint16, historyType, startingHistoryPoint, pointCount, periodCount uint8) (data []byte, err error) {
+	request := Message{}
+	request.Source, request.Destination = client.Host, client.Controller
+	request.Opcode = SendMultipleHistoryPoints
+	indexBytes := []byte{0, 0}
+	binary.BigEndian.PutUint16(indexBytes, index)
+	request.Data = []byte{segment, indexBytes[0], indexBytes[1], historyType, startingHistoryPoint, pointCount, periodCount}
+
+	response, err := client.Transport.Transceive(request)
+	data = response.Data
 	return
 }
