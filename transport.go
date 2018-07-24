@@ -2,6 +2,7 @@ package roc
 
 import (
 	"io"
+	"sync"
 
 	"fmt"
 	"net"
@@ -99,5 +100,30 @@ func (trans TCPTransport) Transceive(request Message) (response Message, err err
 		return
 	}
 	response, err = trans.transceive(request, conn)
+	return
+}
+
+// SharedTCPTransport: This is a TCPTransport wrapped in a mutex lock. It should
+// be used when multiple devices are available at the same address and port, for
+// example several serial devices connected to a serial to tcp converter via RS-485
+// or a radio network.
+type SharedTCPTransport struct {
+	TCPTransport
+	lock *sync.Mutex
+}
+
+func NewSharedTCPTransport(address string, port int, timeout time.Duration) *SharedTCPTransport {
+	trans := new(SharedTCPTransport)
+	trans.Address = address
+	trans.Port = port
+	trans.Timeout = timeout
+	trans.lock = new(sync.Mutex)
+	return trans
+}
+
+func (trans SharedTCPTransport) Transceive(request Message) (response Message, err error) {
+	trans.lock.Lock()
+	response, err = trans.TCPTransport.Transceive(request)
+	trans.lock.Unlock()
 	return
 }
