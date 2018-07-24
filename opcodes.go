@@ -22,6 +22,16 @@ const (
 	SendAlarms             byte = 121
 	SendEvents             byte = 122
 	ReadUserTemplate       byte = 123
+
+	// History opcodes
+	SendLastHour                   byte = 126
+	SendArchivedHistoryFromDate    byte = 128
+	SendArchivedHistoryFromPointer byte = 130
+	Canada_SendEventSequence       byte = 131 // Canada only
+	Canada_ClearEventSequence      byte = 132 // Canada only
+	Canada_SendWritableEvents      byte = 133 // Canada only
+	SendMultipleHistoryPoints      byte = 136
+
 	// ... I'm lazy and don't feel like listing and naming everything right now
 	SentSingleParameter byte = 162
 	// ...
