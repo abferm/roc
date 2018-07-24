@@ -10,7 +10,10 @@ import (
 	"strings"
 
 	"github.com/abferm/roc"
+	"github.com/juju/loggo"
 )
+
+var logger = loggo.GetLogger("")
 
 func main() {
 	netAddr := flag.String("ip", "127.0.0.1", "Network address of controller")
@@ -22,18 +25,22 @@ func main() {
 	controllerGroup := flag.Uint("cg", uint(roc.DefaultGroup), "Group ID for the host to use (0-255)")
 	controllerUnit := flag.Uint("cu", uint(roc.BroadcastUnit), "Unit ID for the host to use (0-255)")
 
-	tlpString := flag.String("start", "0.0.0", "Start TLP")
-	count := flag.Uint("c", 1, "Number of parameters to read")
+	tlpString := flag.String("tlps", "0.0.0", "Comma separated list of TLPs to read")
 	ascii := flag.Bool("ascii", false, "Encode response bytes as ascii rather than hex")
+	debug := flag.Bool("debug", false, "Enable debug logging")
 	flag.Parse()
 
-	tlp, err := parseTLP(*tlpString)
+	if *debug {
+		logger.SetLogLevel(loggo.DEBUG)
+	}
+
+	tlps, err := parseTLPList(*tlpString)
 	if err != nil {
 		panic(err)
 	}
 
 	client := roc.NewClientTCP(roc.Address{Group: byte(*hostGroup), Unit: byte(*hostUnit)}, roc.Address{Group: byte(*controllerGroup), Unit: byte(*controllerUnit)}, *netAddr, *port, *timeout)
-	data, err := client.SendContiguousParameters(tlp, uint8(*count))
+	data, err := client.SendSpecifiedParameters(tlps)
 	if err != nil {
 		panic(err)
 	}
@@ -43,6 +50,18 @@ func main() {
 	} else {
 		fmt.Printf("%x\n", data)
 	}
+}
+
+func parseTLPList(tlpsString string) (tlps []roc.TLP, err error) {
+	for _, tlpString := range strings.Split(tlpsString, ",") {
+		var tlp roc.TLP
+		tlp, err = parseTLP(tlpString)
+		if err != nil {
+			return
+		}
+		tlps = append(tlps, tlp)
+	}
+	return
 }
 
 func parseTLP(tlpString string) (tlp roc.TLP, err error) {
