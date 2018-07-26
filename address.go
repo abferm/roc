@@ -11,8 +11,8 @@ const (
 )
 
 type Address struct {
-	Unit  byte
-	Group byte
+	Unit  byte `yaml:"unit"`
+	Group byte `yaml:"group"`
 }
 
 // read sets address fields from the given io.Reader
