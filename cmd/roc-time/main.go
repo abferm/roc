@@ -19,6 +19,7 @@ func main() {
 	controllerUnit := flag.Uint("cu", uint(roc.DefaultGroup), "Unit ID for the host to use (0-255)")
 	set := flag.Bool("set", false, "Set the time rather than read")
 	zone := flag.String("tz", "Local", "Time zone of the controller")
+	broadcast := flag.Bool("broadcast", false, "Broadcast time to controller group")
 	flag.Parse()
 
 	loc, err := time.LoadLocation(*zone)
@@ -30,7 +31,12 @@ func main() {
 	client := roc.NewClientTCP(roc.Address{Group: byte(*hostGroup), Unit: byte(*hostUnit)}, roc.Address{Group: byte(*controllerGroup), Unit: byte(*controllerUnit)}, *netAddr, *port, *timeout)
 
 	if *set {
-		err = client.SetTimeAndDate(now)
+		if *broadcast {
+			client := roc.NewBroadcastClientTCP(byte(*controllerGroup), *netAddr, *port, *timeout)
+			err = client.SetTimeAndDate(now)
+		} else {
+			err = client.SetTimeAndDate(now)
+		}
 		if err != nil {
 			panic(err)
 		}
