@@ -31,7 +31,7 @@ func NewClientTCP(host, controller Address, networkAddress string, port int, tim
 	return NewClient(host, controller, NewTCPTransport(networkAddress, port, timeout))
 }
 
-func (client Client) SendTimeAndDate() (now time.Time, err error) {
+func (client Client) SendTimeAndDate(loc *time.Location) (now time.Time, err error) {
 	request := Message{}
 	request.Source, request.Destination = client.Host, client.Controller
 	request.Opcode = SendTimeAndDate
@@ -49,10 +49,11 @@ func (client Client) SendTimeAndDate() (now time.Time, err error) {
 	hour := int(response.Data[2])
 	day := int(response.Data[3])
 	month := time.Month(response.Data[4])
-	year := int(response.Data[5])
+	// Assume it's at in the 2000s
+	year := int(response.Data[5]) + 2000
 	//leapYear := int(response.Data[6])
 	//weekDay := int(response.Data[7])
-	now = time.Date(year, month, day, hour, minute, second, 0, time.Local)
+	now = time.Date(year, month, day, hour, minute, second, 0, loc)
 	return
 }
 
