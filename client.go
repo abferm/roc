@@ -1,10 +1,12 @@
 package roc
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"time"
 
+	"github.com/abferm/roc/response"
 	"github.com/abferm/serial"
 )
 
@@ -119,10 +121,41 @@ func (client Client) SendMultipleHistoryPoints(segment uint8, index uint16, hist
 	request.Source, request.Destination = client.Host, client.Controller
 	request.Opcode = SendMultipleHistoryPoints
 	indexBytes := []byte{0, 0}
-	binary.BigEndian.PutUint16(indexBytes, index)
+	binary.LittleEndian.PutUint16(indexBytes, index)
 	request.Data = []byte{segment, indexBytes[0], indexBytes[1], historyType, startingHistoryPoint, pointCount, periodCount}
 
 	response, err := client.Transport.Transceive(request)
 	data = response.Data
+	return
+}
+
+func (client Client) SendArchivedHistoryFromPointer(index uint16, historyType, historyPoint, periodCount uint8) (resp *response.Opcode130, err error) {
+	resp = new(response.Opcode130)
+	requestMSG := Message{}
+	requestMSG.Source, requestMSG.Destination = client.Host, client.Controller
+	requestMSG.Opcode = SendArchivedHistoryFromPointer
+	indexBytes := []byte{0, 0}
+	binary.LittleEndian.PutUint16(indexBytes, index)
+	requestMSG.Data = []byte{historyType, historyPoint, periodCount, indexBytes[0], indexBytes[1]}
+
+	responseMSG, err := client.Transport.Transceive(requestMSG)
+	if err != nil {
+		return
+	}
+	err = resp.FromData(responseMSG.Data)
+	return
+}
+
+func (client Client) SendEventPointers() (resp *response.Opcode120, err error) {
+	resp = new(response.Opcode120)
+	requestMSG := Message{}
+	requestMSG.Source, requestMSG.Destination = client.Host, client.Controller
+	requestMSG.Opcode = SendEventPointers
+
+	responseMSG, err := client.Transport.Transceive(requestMSG)
+	if err != nil {
+		return
+	}
+	err = binary.Read(bytes.NewReader(responseMSG.Data), binary.LittleEndian, resp)
 	return
 }
