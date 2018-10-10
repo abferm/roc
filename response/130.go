@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"time"
 )
 
 type Opcode130 struct {
@@ -46,4 +47,22 @@ type Opcode130Timestamp struct {
 
 func (ts Opcode130Timestamp) String() string {
 	return fmt.Sprintf("%d-%d %d:%d", ts.Month, ts.Day, ts.Hour, ts.Minute)
+}
+
+func (ts Opcode130Timestamp) ToTime(loc *time.Location) (timestamp time.Time) {
+	now := time.Now()
+	year := now.Year()
+	if now.Month() < time.Month(ts.Month) {
+		// Assume the timestamp is from last year
+		// May be wrong if the ROC has been powered off for longer than one year.
+		year -= 1
+	}
+
+	// Avoid panic
+	if loc == nil {
+		loc = time.Local
+	}
+
+	timestamp = time.Date(year, time.Month(ts.Month), int(ts.Day), int(ts.Hour), int(ts.Minute), 0, 0, loc)
+	return
 }
