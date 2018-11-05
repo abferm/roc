@@ -5,7 +5,7 @@ const (
 	SendTestData           byte = 2 // ROC300-Series and FloBoss 407 ONLY
 	SendConfiguration      byte = 6
 	SendTimeAndDate        byte = 7
-	SetTimeAndData         byte = 8
+	SetTimeAndDate         byte = 8
 	SendConfigurableOpcode byte = 10
 	SetConfigurableOpcode  byte = 11
 	SetOperatorID          byte = 17
