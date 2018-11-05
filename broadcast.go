@@ -33,7 +33,7 @@ func NewBroadcastClientTCP(group byte, networkAddress string, port int, timeout 
 func (client BroadcastClient) SetTimeAndDate(now time.Time) (err error) {
 	request := Message{}
 	request.Source, request.Destination = client.Host, client.Controller
-	request.Opcode = SetTimeAndData
+	request.Opcode = SetTimeAndDate
 	request.Data = []byte{byte(now.Second()), byte(now.Minute()), byte(now.Hour()), byte(now.Day()), byte(now.Month()), byte(now.Year() % 100)}
 
 	err = client.Transport.Broadcast(request)
