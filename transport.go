@@ -104,6 +104,13 @@ func (trans SerialTransport) Broadcast(request Message) (err error) {
 	}
 
 	err = trans.send(request, trans.Port)
+	if err != nil {
+		return
+	}
+
+	// Sleep 1/2 timeout in order to ensure the message makes it out before the
+	// next flush
+	time.Sleep(trans.Config.Timeout / 2)
 	return
 }
 
