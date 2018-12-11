@@ -160,3 +160,18 @@ func (client Client) SendEventPointers() (resp *response.Opcode120, err error) {
 	err = binary.Read(bytes.NewReader(responseMSG.Data), binary.LittleEndian, resp)
 	return
 }
+
+func (client Client) SendArchivedHistoryFromDate(historyPoint, day, month uint8) (resp *response.Opcode128, err error) {
+	resp = new(response.Opcode128)
+	requestMSG := Message{}
+	requestMSG.Source, requestMSG.Destination = client.Host, client.Controller
+	requestMSG.Opcode = SendArchivedHistoryFromDate
+	requestMSG.Data = []byte{historyPoint, day, month}
+
+	responseMSG, err := client.Transport.Transceive(requestMSG)
+	if err != nil {
+		return
+	}
+	err = binary.Read(bytes.NewReader(responseMSG.Data), binary.LittleEndian, resp)
+	return
+}
