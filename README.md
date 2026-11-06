@@ -3,6 +3,17 @@
 ## Purpose
 The purpose of this library is to provide a working example of how the ROC protocol works. This code will likely only support a minimal set of the available Opcodes, likely limited to reading and writing parameters.
 
+## Installation
+This library is a Go module:
+```
+go get github.com/abferm/roc
+```
+The command-line tools install with:
+```
+go install github.com/abferm/roc/cmd/roc-time
+```
+Other tools: `flow-sim`, `roc-read`, `roc-history`, `roc-history-by-day`, `roc-history-for-date-range`, `roc-history-table`.
+
 ## On ROC Plus
 I am not terribly familiar with ROC Plus, but it appears mostly to extend the protocol with additional Opcodes. I may or may not extend this library to include ROC Plus functionality.
 
